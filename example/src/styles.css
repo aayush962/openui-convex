@@ -1,0 +1,21 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--openui-background, #fbfaf7);
+  color: var(--openui-text-neutral-primary, #1c1b18);
+  font-family: var(--openui-font-body, ui-sans-serif, system-ui, sans-serif);
+}
+.app { max-width: 760px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.app-header { display: flex; align-items: baseline; gap: 12px; padding: 20px 16px 12px; border-bottom: 1px solid var(--openui-border-default, #e7e4dc); }
+.app-header h1 { font-size: 16px; margin: 0; }
+.app-header button { margin-left: auto; font-size: 13px; padding: 4px 10px; border: 1px solid var(--openui-border-interactive, #d5d1c6); border-radius: 6px; background: var(--openui-foreground, #fff); color: inherit; cursor: pointer; }
+.messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.empty { color: var(--openui-text-neutral-secondary, #8a867c); text-align: center; margin-top: 15vh; font-size: 14px; line-height: 1.7; }
+.msg-user { align-self: flex-end; max-width: 80%; background: var(--openui-chat-user-response-bg, #1c1b18); color: var(--openui-chat-user-response-text, #fbfaf7); padding: 8px 14px; border-radius: 14px 14px 4px 14px; white-space: pre-wrap; font-size: 14px; }
+.msg-assistant { align-self: stretch; }
+.msg-pending { color: var(--openui-text-neutral-secondary, #8a867c); font-size: 13px; }
+.composer { display: flex; gap: 8px; padding: 12px 16px 20px; border-top: 1px solid var(--openui-border-default, #e7e4dc); }
+.composer textarea { flex: 1; resize: none; font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid var(--openui-border-interactive, #d5d1c6); border-radius: 10px; background: var(--openui-foreground, #fff); color: inherit; outline: none; }
+.composer textarea:focus { border-color: var(--openui-border-interactive-emphasis, #a39d8e); }
+.composer button { font: inherit; font-size: 14px; padding: 0 18px; border: none; border-radius: 10px; background: var(--openui-interactive-accent-default, #1c1b18); color: var(--openui-text-accent-primary, #fbfaf7); cursor: pointer; }
+.composer button:disabled { opacity: 0.4; cursor: default; }
