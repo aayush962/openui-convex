@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as agents from "../agents.js";
 import type * as chat from "../chat.js";
 import type * as openui from "../openui.js";
 import type * as prompt from "../prompt.js";
@@ -20,7 +19,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  agents: typeof agents;
   chat: typeof chat;
   openui: typeof openui;
   prompt: typeof prompt;

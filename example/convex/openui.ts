@@ -4,7 +4,8 @@ import type { DataModel } from "./_generated/dataModel";
 import { authorizeThreadAccess } from "./chat";
 
 export const openui = new OpenUI(components.openui);
-export const { listState, setState, clearState, recordAction, listActions } = openui.api<DataModel>({
-  checkRead: (ctx, threadId) => authorizeThreadAccess(ctx, threadId),
-  checkWrite: (ctx, threadId) => authorizeThreadAccess(ctx, threadId),
+// The scope key is the Agent thread id, so thread access doubles as the authorization check.
+export const { getState, setState, clearState } = openui.api<DataModel>({
+  checkRead: authorizeThreadAccess,
+  checkWrite: authorizeThreadAccess,
 });

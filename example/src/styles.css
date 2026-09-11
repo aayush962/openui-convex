@@ -19,3 +19,4 @@ body {
 .composer textarea:focus { border-color: var(--openui-border-interactive-emphasis, #a39d8e); }
 .composer button { font: inherit; font-size: 14px; padding: 0 18px; border: none; border-radius: 10px; background: var(--openui-interactive-accent-default, #1c1b18); color: var(--openui-text-accent-primary, #fbfaf7); cursor: pointer; }
 .composer button:disabled { opacity: 0.4; cursor: default; }
+.app-error { color: #a52722; background: #fff1ef; border-radius: 8px; margin: 0 16px 12px; padding: 12px; overflow-wrap: anywhere; }

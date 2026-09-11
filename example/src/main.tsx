@@ -2,9 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import Chat from "./pages/Chat";
-import "@openuidev/react-ui/defaults.css";
-import "@openuidev/react-ui/index.css";
-import "@openuidev/react-ui/components.css";
+import "@openuidev/react-ui/styles/index.css";
 import "./styles.css";
 
 const url = import.meta.env.VITE_CONVEX_URL as string | undefined;
