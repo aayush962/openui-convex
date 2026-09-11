@@ -2,7 +2,10 @@
   "name": "openui-convex",
   "version": "0.1.0",
   "description": "Durable, reactive OpenUI interface state on Convex.",
-  "repository": "github:aayush962/openui-convex",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aayush962/openui-convex.git"
+  },
   "homepage": "https://github.com/aayush962/openui-convex#readme",
   "bugs": {
     "url": "https://github.com/aayush962/openui-convex/issues"
