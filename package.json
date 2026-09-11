@@ -1,33 +1,62 @@
 {
   "name": "openui-convex",
   "version": "0.1.0",
-  "description": "OpenUI generative UI on Convex: streaming, persistent state, allowlisted tools, and headless chat.",
+  "description": "Durable, reactive OpenUI interface state on Convex.",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.7.1",
   "sideEffects": false,
-  "keywords": ["convex", "component", "openui", "generative-ui", "agent"],
-  "engines": { "node": ">=20.19.0" },
-  "files": ["dist", "src", "README.md", "LICENSE", "CHANGELOG.md"],
+  "keywords": [
+    "convex",
+    "component",
+    "openui",
+    "generative-ui",
+    "agent"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "exports": {
     "./package.json": "./package.json",
-    ".": { "types": "./dist/client/index.d.ts", "default": "./dist/client/index.js" },
-    "./react": { "types": "./dist/react/index.d.ts", "default": "./dist/react/index.js" },
-    "./react/agent": { "types": "./dist/react/agent.d.ts", "default": "./dist/react/agent.js" },
-    "./react/headless": { "types": "./dist/react/headless/index.d.ts", "default": "./dist/react/headless/index.js" },
+    ".": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
     "./test": "./src/test.ts",
-    "./_generated/component.js": { "types": "./dist/component/_generated/component.d.ts" },
-    "./_generated/component": { "types": "./dist/component/_generated/component.d.ts" },
-    "./convex.config.js": { "types": "./dist/component/convex.config.d.ts", "default": "./dist/component/convex.config.js" },
-    "./convex.config": { "types": "./dist/component/convex.config.d.ts", "default": "./dist/component/convex.config.js" }
+    "./_generated/component.js": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./_generated/component": {
+      "types": "./dist/component/_generated/component.d.ts"
+    },
+    "./convex.config.js": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    },
+    "./convex.config": {
+      "types": "./dist/component/convex.config.d.ts",
+      "default": "./dist/component/convex.config.js"
+    }
   },
   "types": "./dist/client/index.d.ts",
   "module": "./dist/client/index.js",
   "scripts": {
-    "predev": "npm run build:codegen && npm run gen:spec",
+    "predev": "convex init && npm run build:codegen && npm run gen:spec",
     "dev": "convex dev --start 'npm run dev:build'",
     "dev:frontend": "vite --config example/vite.config.ts",
     "dev:build": "chokidar 'tsconfig*.json' 'src/**/*.{ts,tsx}' -i '**/*.test.*' -i '**/_generated/**' -c 'npm run build:codegen'",
-    "build": "tsc --project tsconfig.build.json",
+    "build": "rm -rf dist && tsc --project tsconfig.build.json",
     "build:codegen": "convex codegen --component-dir ./src/component && npm run build",
     "build:example": "npm run build && npm run gen:spec && vite build --config example/vite.config.ts",
     "gen:spec": "OPENUI_TELEMETRY_DISABLED=1 openui generate ./example/src/library/index.ts --out ./example/convex/generated/system-prompt.txt",
@@ -35,25 +64,20 @@
     "lint": "eslint .",
     "test": "vitest run --typecheck",
     "test:watch": "vitest",
-    "check": "npm run build:codegen && npm run typecheck && npm run lint && npm test && npm run build:example",
+    "check": "npm run build && npm run typecheck && npm run lint && npm test && npm run build:example && npm run check:exports",
+    "check:exports": "node scripts/check-exports.mjs",
     "pack:check": "npm run check && npm pack --dry-run",
     "deploy:example": "convex deploy --cmd 'npm run build:example' --cmd-url-env-var-name VITE_CONVEX_URL"
   },
   "peerDependencies": {
     "convex": "^1.43.0",
-    "react": "^18.3.1 || ^19.0.0",
-    "react-dom": "^18.3.1 || ^19.0.0",
-    "@openuidev/react-lang": "0.2.15",
-    "@openuidev/lang-core": "0.2.18",
-    "@convex-dev/agent": "0.7.2",
-    "@openuidev/react-headless": "0.9.13",
-    "zod": "^4.1.8"
+    "react": "^18.3.1 || ^19.0.0"
   },
   "peerDependenciesMeta": {
-    "@convex-dev/agent": { "optional": true },
-    "@openuidev/react-headless": { "optional": true }
+    "react": {
+      "optional": true
+    }
   },
-  "dependencies": { "convex-helpers": "0.1.124" },
   "devDependencies": {
     "@ai-sdk/anthropic": "4.0.52",
     "@convex-dev/agent": "0.7.2",
@@ -73,13 +97,11 @@
     "ai": "7.0.97",
     "chokidar-cli": "3.0.0",
     "convex": "1.45.0",
+    "convex-helpers": "0.1.124",
     "convex-test": "0.0.57",
     "eslint": "9.39.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.9.0",
     "jsdom": "^26.1.0",
-    "pkg-pr-new": "^0.0.86",
-    "prettier": "3.9.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "5.9.3",
