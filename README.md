@@ -1,5 +1,9 @@
 # openui-convex
 
+[![npm version](https://img.shields.io/npm/v/openui-convex.svg)](https://www.npmjs.com/package/openui-convex)
+
+<!-- START: Include on https://convex.dev/components -->
+
 Durable, reactive state for [OpenUI](https://www.openui.com) interfaces on [Convex](https://convex.dev).
 
 A generated form or interactive interface keeps its state across reloads and stays in sync across clients. Your application keeps control of rendering, actions, tools, and AI generation.
@@ -9,7 +13,7 @@ A generated form or interactive interface keeps its state across reloads and sta
 - A React hook that hydrates your Renderer, debounces and orders writes, and applies remote updates without clobbering what the user is editing.
 - No runtime dependencies. `convex` is a peer; `react` is an optional peer used only by `openui-convex/react`.
 
-**Status:** 0.1.0, an early release. The API may change before 1.0.
+**Status:** early release. The API may change before 1.0. Found a bug or want something changed? [File an issue](https://github.com/aayush962/openui-convex/issues).
 
 ## Install
 
@@ -136,6 +140,8 @@ import schema from "./schema";
 const t = convexTest(schema, import.meta.glob("./**/*.ts"));
 register(t); // mounts the component as "openui"
 ```
+
+<!-- END: Include on https://convex.dev/components -->
 
 ## Run the example
 
