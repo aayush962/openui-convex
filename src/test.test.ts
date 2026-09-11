@@ -13,7 +13,11 @@ test("register helper supports server helpers and app wrappers with authorizatio
     checkRead: (_ctx, scope) => { if (scope !== "allowed") throw new Error("Forbidden"); },
     checkWrite: (_ctx, scope) => { if (scope !== "allowed") throw new Error("Forbidden"); },
   });
-  const modules = { ...import.meta.glob("./component/_generated/*.ts"), "./component/testApp.ts": () => Promise.resolve(appApi) };
+  // convex-test locates the functions root by a key containing "_generated"; the marker is never imported.
+  const modules = {
+    "./_generated/api.ts": () => Promise.resolve({}),
+    "./testApp.ts": () => Promise.resolve(appApi),
+  };
   const t = convexTest(defineSchema({}), modules);
   register(t);
 
