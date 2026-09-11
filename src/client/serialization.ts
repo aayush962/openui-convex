@@ -21,27 +21,36 @@ export function decodeState(value: Record<string, unknown>): Record<string, unkn
   return parsed as Record<string, unknown>;
 }
 
-/** Fail explicitly instead of silently dropping undefined, NaN, dates, or cyclic values. */
+/**
+ * `JSON.stringify` semantics with sorted keys, so equal states have equal fingerprints regardless of key order.
+ * The Renderer reports fields as `{ value, componentType }` with `componentType` often undefined, so `undefined`,
+ * functions, and symbols are dropped from objects and become `null` in arrays; non-finite numbers become `null`;
+ * objects with `toJSON`, such as dates, serialize through it. Cycles and BigInt throw, as they do in JSON.
+ */
 export function serializeJson(value: unknown): string {
   const ancestors = new WeakSet<object>();
   function normalize(entry: unknown): unknown {
-    if (entry === undefined || typeof entry === "function" || typeof entry === "symbol" || typeof entry === "bigint") {
-      throw new Error("OpenUI state must contain JSON values");
+    if (entry && typeof entry === "object" && typeof (entry as { toJSON?: unknown }).toJSON === "function") {
+      entry = (entry as { toJSON: () => unknown }).toJSON();
     }
-    if (typeof entry === "number" && !Number.isFinite(entry)) throw new Error("OpenUI state must contain finite numbers");
+    if (entry === undefined || typeof entry === "function" || typeof entry === "symbol") return undefined;
+    if (typeof entry === "bigint") throw new Error("OpenUI state must not contain BigInt values");
+    if (typeof entry === "number" && !Number.isFinite(entry)) return null;
     if (entry && typeof entry === "object") {
       if (ancestors.has(entry)) throw new Error("OpenUI state must not contain cycles");
-      if (!Array.isArray(entry) && Object.getPrototypeOf(entry) !== Object.prototype && Object.getPrototypeOf(entry) !== null) {
-        throw new Error("OpenUI state must contain plain JSON objects");
-      }
       ancestors.add(entry);
-      const normalized = Array.isArray(entry) ? entry.map(normalize) : Object.fromEntries(
-        Object.entries(entry).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, normalize(item)]),
-      );
+      const normalized = Array.isArray(entry)
+        ? entry.map(item => normalize(item) ?? null)
+        : Object.fromEntries(
+          Object.entries(entry).sort(([a], [b]) => a.localeCompare(b)).flatMap(([key, item]) => {
+            const normalizedItem = normalize(item);
+            return normalizedItem === undefined ? [] : [[key, normalizedItem]];
+          }),
+        );
       ancestors.delete(entry);
       return normalized;
     }
     return entry;
   }
-  return JSON.stringify(normalize(value));
+  return JSON.stringify(normalize(value) ?? null);
 }

@@ -11,7 +11,7 @@ Reviewed 2026-09-11 against the installed packages: Convex 1.45.0, Convex Agent 
 ## Data
 
 - `uiState` is keyed by `(scopeKey, messageId)`. Both are opaque strings chosen by the application, so the component fits threads, documents, and dashboards. A `version` counter increments on every write, and the document id is returned as `instanceId` so a client can tell a recreated record, whose version restarts, from a stale echo.
-- Raw OpenUI `$binding` keys are invalid Convex object keys: `convexToJson({ $name: "Ada" })` throws. State travels and is stored as `{ openuiEncoding: "json-v1", data }`. `state.set` decodes the envelope, re-serializes it with a strict JSON check, and rejects snapshots above 64 KiB.
+- Raw OpenUI `$binding` keys are invalid Convex object keys: `convexToJson({ $name: "Ada" })` throws. State travels and is stored as `{ openuiEncoding: "json-v1", data }`. `state.set` decodes the envelope, re-serializes it, and rejects snapshots above 64 KiB. Serialization follows `JSON.stringify` semantics with sorted keys: the Renderer reports every field as `{ value, componentType }` with `componentType` often `undefined`, and a stricter serializer rejected every real snapshot, which the unit tests missed because they used a fake renderer.
 - Reads are per interface (`get`), never per scope. `clear` deletes at most 100 records per call and reports `hasMore`; callers continue in a new transaction.
 
 ## React

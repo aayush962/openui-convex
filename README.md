@@ -89,7 +89,7 @@ Actions, tool providers, and the component library stay yours. The hook never se
 ## Contract
 
 - **Conflicts.** Last write wins and every write increments `version`. The hook ignores snapshots older than what it already saved, defers remote snapshots while a write is in flight or the interface has focus, and applies them afterwards. There is no merge: this is form state, not collaborative text.
-- **Encoding.** OpenUI state uses `$binding` keys, which Convex rejects as object keys. On the wire and in storage the state is a JSON envelope, `{ openuiEncoding: "json-v1", data: "..." }`. The hook and the server helpers encode and decode for you; use `encodeState` and `decodeState` if you call the wrappers directly. Values must be JSON: no `undefined`, `NaN`, dates, or cycles.
+- **Encoding.** OpenUI state uses `$binding` keys, which Convex rejects as object keys. On the wire and in storage the state is a JSON envelope, `{ openuiEncoding: "json-v1", data: "..." }`. The hook and the server helpers encode and decode for you; use `encodeState` and `decodeState` if you call the wrappers directly. Serialization follows `JSON.stringify`: `undefined` and functions are dropped, non-finite numbers become `null`, dates become ISO strings, and cycles or BigInt are rejected.
 - **Limits.** One snapshot is at most 64 KiB of JSON. Larger or malformed writes are rejected before storage.
 - **Reads.** Each interface subscribes to its own record. Nothing reads a whole scope, so a long thread costs only what is on screen.
 - **Delivery.** Unmount and `pagehide` flush pending edits on a best-effort basis. A closed tab or a lost connection can lose the last debounce window.

@@ -27,7 +27,8 @@ function FakeRenderer({ initialState, onStateUpdate }: {
   const [value, setValue] = useState(String(initialState?.$name ?? ""));
   return <input aria-label="Name" value={value} onChange={event => {
     setValue(event.target.value);
-    onStateUpdate?.({ $name: event.target.value });
+    // The real Renderer reports fields as { value, componentType }, and componentType is often undefined.
+    onStateUpdate?.({ $name: event.target.value, form: { name: { value: event.target.value, componentType: undefined } } });
   }} />;
 }
 function Example({ scope = "thread", streaming = false }: { scope?: string; streaming?: boolean }) {
@@ -79,7 +80,7 @@ test("keeps focus and local edits across echoes; applies remote changes after bl
   await act(async () => { await vi.advanceTimersByTimeAsync(400); });
   expect(mocks.save).toHaveBeenCalledTimes(1);
   expect(mocks.save.mock.calls[0][0]).toMatchObject({ scopeKey: "thread", messageId: "m" });
-  expect(decodeState(mocks.save.mock.calls[0][0].state)).toEqual({ $name: "Grace" });
+  expect(decodeState(mocks.save.mock.calls[0][0].state)).toEqual({ $name: "Grace", form: { name: { value: "Grace" } } });
   // The echo of our own write must not remount the renderer.
   remote("Grace", 2);
   view.rerender(<Harness />);
