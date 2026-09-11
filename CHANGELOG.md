@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.1 (2026-09-11)
+
 - README links resolve on the npm page.
 - The `_generated/component` entry points also carry a runtime `default` export, as the components preflight check suggests.
 
