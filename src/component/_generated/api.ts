@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as actions from "../actions.js";
 import type * as state from "../state.js";
 
 import type {
@@ -19,7 +18,6 @@ import type {
 import { anyApi, componentsGeneric } from "convex/server";
 
 const fullApi: ApiFromModules<{
-  actions: typeof actions;
   state: typeof state;
 }> = anyApi as any;
 
