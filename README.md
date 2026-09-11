@@ -9,7 +9,7 @@ A generated form or interactive interface keeps its state across reloads and sta
 - A React hook that hydrates your Renderer, debounces and orders writes, and applies remote updates without clobbering what the user is editing.
 - No runtime dependencies. `convex` is a peer; `react` is an optional peer used only by `openui-convex/react`.
 
-**Status:** 0.1.0, unreleased.
+**Status:** 0.1.0, an early release. The API may change before 1.0.
 
 ## Install
 
