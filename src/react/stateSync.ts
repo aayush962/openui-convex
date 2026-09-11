@@ -1,11 +1,7 @@
+import { serializeJson } from "../client/serialization.js";
 /** Compare JSON state without treating object insertion order as an edit. */
 export function stateFingerprint(value: unknown): string {
-  return JSON.stringify(value, (_key, entry: unknown) => {
-    if (entry && typeof entry === "object" && !Array.isArray(entry)) {
-      return Object.fromEntries(Object.entries(entry).sort(([a], [b]) => a.localeCompare(b)));
-    }
-    return entry;
-  });
+  return serializeJson(value);
 }
 
 /** Trailing debounce with serialized writes, so a slower request cannot overwrite a newer edit. */
@@ -58,7 +54,7 @@ export class StateSynchronizer {
     this.pending = undefined;
     const fingerprint = stateFingerprint(value);
     if (fingerprint === this.lastSaved) return;
-    this.running = this.options.save(value, this.version).then(result => {
+    this.running = Promise.resolve().then(() => this.options.save(value, this.version)).then(result => {
       this.version = Math.max(this.version, result.version);
       this.lastSaved = fingerprint;
     }).catch((error: unknown) => {

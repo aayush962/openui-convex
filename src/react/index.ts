@@ -1,2 +1,1 @@
-export { StateSynchronizer, stateFingerprint } from "./stateSync.js";
-export { useConvexToolProvider } from "./useConvexToolProvider.js";
+export { useOpenUIState, type UseOpenUIStateOptions } from "./useOpenUIState.js";
