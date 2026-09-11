@@ -33,7 +33,7 @@ function FakeRenderer({ initialState, onStateUpdate }: {
 function Example({ scope = "thread", streaming = false }: { scope?: string; streaming?: boolean }) {
   const ui = useOpenUIState({ api, scopeKey: scope, messageId: "m", isStreaming: streaming, onError: mocks.error });
   if (ui.isLoading) return null;
-  return <div ref={ui.containerRef}>
+  return <div {...ui.containerProps}>
     <FakeRenderer key={ui.key} initialState={ui.initialState} onStateUpdate={ui.onStateUpdate} />
   </div>;
 }

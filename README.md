@@ -59,7 +59,7 @@ function GeneratedUI({ threadId, message }: { threadId: string; message: { key: 
   const ui = useOpenUIState({ api: api.openui, scopeKey: threadId, messageId: message.key, isStreaming: streaming });
   if (ui.isLoading) return null;
   return (
-    <div ref={ui.containerRef}>
+    <div {...ui.containerProps}>
       <Renderer
         key={ui.key}
         library={library}
@@ -79,7 +79,7 @@ What the hook returns:
 - `isLoading`: wait for it before mounting, so the Renderer hydrates from the saved snapshot instead of its defaults.
 - `key` and `initialState`: pass both. The key changes when a remote snapshot replaces local state, and the remount clears fields the snapshot no longer contains.
 - `onStateUpdate`: `undefined` while streaming or loading, so incomplete state is never saved.
-- `containerRef`: attach to an element around the Renderer. Remote updates wait until focus leaves it.
+- `containerProps`: spread onto the element around the Renderer. Remote updates wait until focus leaves it.
 - `flush()`: writes pending edits now. Await it before app-controlled navigation.
 
 Options: `debounceMs` (default 400) and `onError`, which receives failed writes and invalid values.

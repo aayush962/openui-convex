@@ -17,6 +17,7 @@ Reviewed 2026-09-11 against the installed packages: Convex 1.45.0, Convex Agent 
 ## React
 
 - The Renderer re-initializes from `initialState` when it changes but never removes keys omitted by a later snapshot. The hook therefore remounts through `key` when a remote snapshot replaces local state, and defers that while a write is in flight or focus is inside the interface. A `focusout` listener on the container re-checks afterwards.
+- The hook holds its imperative state in an `InterfaceSession` behind `useSyncExternalStore` rather than in React state, so the React Compiler rules hold and the controller stays framework-agnostic. The wrapper ref is returned as a spreadable `containerProps` object because the compiler's ref rule treats any object whose property feeds a JSX `ref` as a ref and then rejects reading its other properties during render.
 - Writes are debounced (400 ms trailing) and serialized in `StateSynchronizer`, so a slow request cannot overwrite a newer edit. Failed writes are reported through `onError`, and reporting the same value again retries.
 - `onStateUpdate` is withheld while streaming: the model may re-emit state declarations mid-stream, and the Renderer re-initializes on each.
 

@@ -33,7 +33,7 @@ function AssistantMessage({ threadId, message, onAction }: {
     if (message.status === "pending") return <div className="msg-pending">Thinking…</div>;
   }
   if (ui.isLoading) return null;
-  return <div className="msg-assistant" ref={ui.containerRef}>
+  return <div className="msg-assistant" {...ui.containerProps}>
     <Renderer
       key={ui.key}
       library={openuiChatLibrary}

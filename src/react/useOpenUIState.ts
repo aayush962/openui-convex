@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { getFunctionName } from "convex/server";
-import type { OpenUIApi, StateDoc, UIState } from "../client/index.js";
-import { decodeState, encodeState } from "../client/serialization.js";
-import { StateSynchronizer, stateFingerprint } from "./stateSync.js";
+import type { OpenUIApi, UIState } from "../client/index.js";
+import { encodeState } from "../client/serialization.js";
+import { InterfaceSession, LOADING_VIEW, type SessionView } from "./session.js";
 
 export type UseOpenUIStateOptions = {
   /** Your app's wrappers from `openui.api(...)`, for example `api.openui`. */
@@ -24,96 +24,81 @@ export type UseOpenUIStateOptions = {
  * Persists one OpenUI Renderer's state in Convex and keeps it in sync across clients.
  *
  * Wire the result into your own Renderer once `isLoading` is false:
- * `ref={containerRef}` on an element around it, then `key`, `initialState`, and `onStateUpdate` on it.
+ * spread `containerProps` onto an element around it, then pass `key`, `initialState`, and `onStateUpdate` to it.
  */
 export function useOpenUIState({ api, scopeKey, messageId, isStreaming = false, debounceMs = 400, onError }: UseOpenUIStateOptions) {
   const remote = useQuery(api.getState, { scopeKey, messageId });
   const save = useMutation(api.setState);
-  const container = useRef<HTMLElement | null>(null);
-  const errorHandler = useRef(onError);
-  errorHandler.current = onError;
-  const [tick, refresh] = useReducer((n: number) => n + 1, 0);
   const identity = JSON.stringify([scopeKey, messageId, getFunctionName(api.getState), getFunctionName(api.setState)]);
-  function createSession() {
-    const initialState = remote ? decodeState(remote.state) : undefined;
-    const session = {
-      identity, ready: remote !== undefined, active: false,
-      hadRemote: remote != null, instanceId: remote?.instanceId,
-      view: { state: initialState, revision: 0 },
-      sync: new StateSynchronizer({
-        delay: debounceMs, initialState, initialVersion: remote?.version,
-        // Capture this scope, so unmount/scope-change flushes cannot write into the next one.
-        save: state => save({ scopeKey, messageId, state: encodeState(state) }),
-        onError: error => errorHandler.current?.(error),
-        onSettled: () => { if (session.active) refresh(); },
-      }),
+
+  const session = useRef<InterfaceSession | null>(null);
+  const element = useRef<HTMLElement | null>(null);
+  const listener = useRef<(() => void) | null>(null);
+  const latest = useRef({ save, onError });
+  useEffect(() => { latest.current = { save, onError }; });
+
+  const subscribe = useCallback((notify: () => void) => {
+    listener.current = notify;
+    return () => { listener.current = null; };
+  }, []);
+  // A session for another interface never leaks its view into this one, not even for one render.
+  const getSnapshot = useCallback((): SessionView => {
+    const current = session.current;
+    return current && current.identity === identity ? current.view : LOADING_VIEW;
+  }, [identity]);
+  const view = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+  const isFocused = useCallback(() => element.current?.contains(document.activeElement) ?? false, []);
+  useEffect(() => {
+    const created = new InterfaceSession(identity, {
+      delay: debounceMs,
+      // Capture this scope: a flush after a scope change must not write into the next one.
+      save: state => latest.current.save({ scopeKey, messageId, state: encodeState(state) }),
+      onError: error => latest.current.onError?.(error),
+      isFocused,
+      onChange: () => listener.current?.(),
+    });
+    session.current = created;
+    const flush = () => { void created.flush(); };
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      void created.dispose();
+      if (session.current === created) session.current = null;
     };
-    return session;
-  }
-  const [session, setSession] = useState(createSession);
-  // Reset synchronously before rendering a different interface (including its defaults).
-  if (session.identity !== identity) setSession(createSession());
-  const current = useRef(session);
-  current.current = session;
+  }, [identity, scopeKey, messageId, debounceMs, isFocused]);
+
+  useEffect(() => {
+    if (remote !== undefined) session.current?.receive(remote);
+  }, [remote, identity]);
 
   // Deferred remote updates may apply once focus leaves the interface.
   const onFocusOut = useCallback(() => {
-    queueMicrotask(() => { if (current.current.active) refresh(); });
+    queueMicrotask(() => session.current?.recheck());
   }, []);
-  const containerRef = useCallback((element: HTMLElement | null) => {
-    container.current?.removeEventListener("focusout", onFocusOut);
-    container.current = element;
-    element?.addEventListener("focusout", onFocusOut);
+  const container = useCallback((node: HTMLElement | null) => {
+    element.current?.removeEventListener("focusout", onFocusOut);
+    element.current = node;
+    node?.addEventListener("focusout", onFocusOut);
   }, [onFocusOut]);
-
-  useEffect(() => {
-    session.active = true;
-    const flush = () => { void session.sync.flush(); };
-    window.addEventListener("pagehide", flush);
-    return () => {
-      session.active = false;
-      window.removeEventListener("pagehide", flush);
-      void session.sync.flush();
-    };
-  }, [session]);
-
-  useEffect(() => {
-    if (remote === undefined) return;
-    const apply = (row: StateDoc | null) => {
-      const state = row ? decodeState(row.state) : {};
-      const different = stateFingerprint(state) !== session.sync.fingerprint;
-      session.sync.accept(state, row?.version ?? 0);
-      session.hadRemote = row !== null;
-      session.instanceId = row?.instanceId;
-      if (different || !session.ready) {
-        session.view = { state, revision: session.view.revision + 1 };
-        session.ready = true;
-        refresh();
-      }
-    };
-    if (!session.ready) { apply(remote); return; }
-    // Never replace what the user is editing or what is still being written.
-    if (session.sync.busy || container.current?.contains(document.activeElement)) return;
-    const recreated = remote !== null && remote.instanceId !== session.instanceId;
-    if (remote && remote.version < session.sync.version && !recreated) return;
-    if (!remote && !session.hadRemote) return;
-    apply(remote);
-  }, [remote, session, tick]);
+  // Spread rather than passed as `ref`: the React Compiler treats an object whose property feeds a ref prop as a ref.
+  const containerProps = useMemo(() => ({ ref: container }), [container]);
 
   const report = useCallback((state: UIState) => {
-    try { session.sync.report(state); } catch (error) { errorHandler.current?.(error); }
-  }, [session]);
+    try { session.current?.report(state); } catch (error) { latest.current.onError?.(error); }
+  }, []);
+  const flush = useCallback(() => session.current?.flush() ?? Promise.resolve(), []);
 
   return {
     /** True until the persisted snapshot, or its absence, is known. Mount the Renderer after that. */
-    isLoading: !session.ready || remote === undefined,
+    isLoading: !view.ready || remote === undefined,
     /** Changes when a remote snapshot replaces local state; the remount also clears fields the snapshot no longer has. */
-    key: `${identity}:${session.view.revision}`,
-    initialState: session.view.state,
-    /** Attach to an element around the Renderer. Remote updates wait until focus leaves it. */
-    containerRef,
-    onStateUpdate: isStreaming || !session.ready ? undefined : report,
+    key: `${identity}:${view.revision}`,
+    initialState: view.state,
+    /** Spread onto the element around the Renderer. Remote updates wait until focus leaves it. */
+    containerProps,
+    onStateUpdate: isStreaming || !view.ready ? undefined : report,
     /** Writes pending edits now. Await it before app-controlled navigation. Failures go to onError. */
-    flush: () => session.sync.flush(),
+    flush,
   };
 }
