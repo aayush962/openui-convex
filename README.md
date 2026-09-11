@@ -165,4 +165,4 @@ The example is a shared, unauthenticated sandbox: anyone who reaches its backend
 npm run check   # build, typecheck, lint, tests, example build, export check
 ```
 
-Checks run against the committed generated files and need no deployment. After changing the component's functions, run `npm run build:codegen` against a development deployment to regenerate `src/component/_generated`. `example/convex/openui.test.ts` shows how an app tests code that uses the component. Releases are described in [PUBLISHING.md](PUBLISHING.md).
+Checks run against the committed generated files and need no deployment. After changing the component's functions, run `npm run build:codegen` against a development deployment to regenerate `src/component/_generated`. `example/convex/openui.test.ts` shows how an app tests code that uses the component. Releases are described in [PUBLISHING.md](https://github.com/aayush962/openui-convex/blob/main/PUBLISHING.md).

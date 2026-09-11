@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- README links resolve on the npm page.
+- The `_generated/component` entry points also carry a runtime `default` export, as the components preflight check suggests.
+
 ## 0.1.0 (2026-09-11)
 
 - Convex component with one `uiState` table keyed by opaque `scopeKey` and `messageId`, versioned last-write-wins writes, and batched deletion.
